@@ -11,50 +11,56 @@ type Config struct {
 	CurrentUserName string `json:"current_user_name"`
 }
 
-func Read() Config {
-	configPath := getConfigFilePath()
+func Read() (Config, error) {
+	configPath, err := getConfigFilePath()
+	if err != nil {
+		return Config{}, err
+	}
 
 	data, err := os.ReadFile(configPath)
 	if err != nil {
 		fmt.Printf("\n Could not read config file. Err: %v", err)
-		return Config{}
+		return Config{}, err
 	}
 
 	var config Config
 	err = json.Unmarshal(data, &config)
 	if err != nil {
 		fmt.Printf("\n Could not convert config to JSON. Err: %v", err)
-		return Config{}
+		return Config{}, err
 	}
 
-	return config
+	return config, nil
 }
 
-func (c *Config) SetUser(user string) {
+func (c *Config) SetUser(user string) error {
 
 	c.CurrentUserName = user
 
 	bytes, err := json.Marshal(c)
 	if err != nil {
-		fmt.Printf("\n Could not convert config to bytes. Err: %v", err)
-		return
+		return fmt.Errorf("\n Could not convert config to bytes. Err: %w", err)
 	}
-	configPath := getConfigFilePath()
+	configPath, err := getConfigFilePath()
+	if err != nil {
+		return err
+	}
+
 	err = os.WriteFile(configPath, bytes, os.ModeDevice)
 	if err != nil {
-		fmt.Printf("\n Could not write to config file. Err: %v", err)
-		return
+		return fmt.Errorf("\n Could not write to config file. Err: %w", err)
 	}
+
+	return nil
 }
 
-func getConfigFilePath() string {
+func getConfigFilePath() (string, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		fmt.Printf("\n Could not get user's home directory. Err: %v", err)
-		return ""
+		return "", fmt.Errorf("\n Could not get user's home directory. Err: %w", err)
 	}
 
 	configPath := homeDir + "/.gatorconfig.json"
 
-	return configPath
+	return configPath, nil
 }
