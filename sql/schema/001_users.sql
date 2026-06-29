@@ -1,7 +1,7 @@
 -- +goose Up
 CREATE TABLE
     IF NOT EXISTS users (
-        id UUID,
+        id UUID NOT NULL,
         created_at TIMESTAMP,
         updated_at TIMESTAMP,
         name text Unique NOT NULL

@@ -1,11 +1,15 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 
+	_ "github.com/lib/pq"
+
 	"github.com/GeorgievPlamen/rss-feed/internal/commands"
 	"github.com/GeorgievPlamen/rss-feed/internal/config"
+	"github.com/GeorgievPlamen/rss-feed/internal/database"
 )
 
 func main() {
@@ -15,8 +19,17 @@ func main() {
 		os.Exit(-1)
 	}
 
+	db, err := sql.Open("postgres", config.DbUrl)
+	if err != nil {
+		fmt.Printf("Connecion to PostgreSQL failed: %v", err)
+		os.Exit(-1)
+	}
+
+	dbQueries := database.New(db)
+
 	state := commands.State{
 		Config: &config,
+		Db:     dbQueries,
 	}
 
 	availableCommands := commands.Commands{
@@ -24,6 +37,7 @@ func main() {
 	}
 
 	availableCommands.Register("login", commands.HandlerLogin)
+	availableCommands.Register("register", commands.HandlerRegister)
 
 	if len(os.Args) < 2 {
 		fmt.Printf("\n You need to provide atleast one argument.")
