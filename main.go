@@ -41,6 +41,7 @@ func main() {
 	availableCommands.Register("reset", commands.HandlerReset)
 	availableCommands.Register("users", commands.HandlerUsers)
 	availableCommands.Register("agg", commands.HandlerAgg)
+	availableCommands.Register("addfeed", commands.HandlerAddFeed)
 
 	if len(os.Args) < 2 {
 		fmt.Printf("\n You need to provide atleast one argument.")

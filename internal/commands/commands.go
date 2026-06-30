@@ -146,3 +146,42 @@ func HandlerAgg(s *State, cmd Command) error {
 	fmt.Println(rss)
 	return nil
 }
+
+func HandlerAddFeed(s *State, cmd Command) error {
+	if len(cmd.Args) < 2 {
+		return fmt.Errorf("Add feed takes 2 args, name and url of the feed.")
+	}
+
+	curUser, err := s.Db.GetUser(context.Background(), s.Config.CurrentUserName)
+	if err != nil {
+		return err
+	}
+
+	feed, err := s.Db.AddFeed(context.Background(), database.AddFeedParams{
+		ID: uuid.New(),
+		CreatedAt: sql.NullTime{
+			Time:  time.Now().UTC(),
+			Valid: true,
+		},
+		UpdatedAt: sql.NullTime{
+			Time:  time.Now().UTC(),
+			Valid: true,
+		},
+		Name: sql.NullString{
+			String: cmd.Args[0],
+			Valid:  true,
+		},
+		Url: sql.NullString{
+			String: cmd.Args[1],
+			Valid:  true,
+		},
+		UserID: curUser.ID,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(feed)
+	return nil
+}
