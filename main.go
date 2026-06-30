@@ -41,10 +41,10 @@ func main() {
 	availableCommands.Register("reset", commands.HandlerReset)
 	availableCommands.Register("users", commands.HandlerUsers)
 	availableCommands.Register("agg", commands.HandlerAgg)
-	availableCommands.Register("addfeed", commands.HandlerAddFeed)
 	availableCommands.Register("feeds", commands.HandlerFeeds)
-	availableCommands.Register("follow", commands.HandlerFollow)
-	availableCommands.Register("following", commands.HandlerFollowing)
+	availableCommands.Register("addfeed", commands.MiddlewareLoggedIn(commands.HandlerAddFeed))
+	availableCommands.Register("follow", commands.MiddlewareLoggedIn(commands.HandlerFollow))
+	availableCommands.Register("following", commands.MiddlewareLoggedIn(commands.HandlerFollowing))
 
 	if len(os.Args) < 2 {
 		fmt.Printf("\n You need to provide atleast one argument.")

@@ -147,14 +147,9 @@ func HandlerAgg(s *State, cmd Command) error {
 	return nil
 }
 
-func HandlerAddFeed(s *State, cmd Command) error {
+func HandlerAddFeed(s *State, cmd Command, user database.User) error {
 	if len(cmd.Args) < 2 {
 		return fmt.Errorf("Add feed takes 2 args, name and url of the feed.")
-	}
-
-	curUser, err := s.Db.GetUser(context.Background(), s.Config.CurrentUserName)
-	if err != nil {
-		return err
 	}
 
 	feed, err := s.Db.AddFeed(context.Background(), database.AddFeedParams{
@@ -175,7 +170,7 @@ func HandlerAddFeed(s *State, cmd Command) error {
 			String: cmd.Args[1],
 			Valid:  true,
 		},
-		UserID: curUser.ID,
+		UserID: user.ID,
 	})
 
 	if err != nil {
@@ -192,7 +187,7 @@ func HandlerAddFeed(s *State, cmd Command) error {
 			Time:  time.Now().UTC(),
 			Valid: true,
 		},
-		UserID: curUser.ID,
+		UserID: user.ID,
 		FeedID: feed.ID,
 	})
 
@@ -217,14 +212,9 @@ func HandlerFeeds(s *State, cmd Command) error {
 	return nil
 }
 
-func HandlerFollow(s *State, cmd Command) error {
+func HandlerFollow(s *State, cmd Command, user database.User) error {
 	if len(cmd.Args) < 1 {
 		return fmt.Errorf("Follow takes one arg - url")
-	}
-
-	curUser, err := s.Db.GetUser(context.Background(), s.Config.CurrentUserName)
-	if err != nil {
-		return err
 	}
 
 	feed, err := s.Db.GetFeedByUrl(context.Background(), sql.NullString{
@@ -246,7 +236,7 @@ func HandlerFollow(s *State, cmd Command) error {
 			Time:  time.Now().UTC(),
 			Valid: true,
 		},
-		UserID: curUser.ID,
+		UserID: user.ID,
 		FeedID: feed.ID,
 	})
 	if err != nil {
@@ -259,13 +249,9 @@ func HandlerFollow(s *State, cmd Command) error {
 	return nil
 }
 
-func HandlerFollowing(s *State, cmd Command) error {
-	curUser, err := s.Db.GetUser(context.Background(), s.Config.CurrentUserName)
-	if err != nil {
-		return err
-	}
+func HandlerFollowing(s *State, cmd Command, user database.User) error {
 
-	curUserFeedFollows, err := s.Db.GetFeedFollowsByUserId(context.Background(), curUser.ID)
+	curUserFeedFollows, err := s.Db.GetFeedFollowsByUserId(context.Background(), user.ID)
 	if err != nil {
 		return err
 	}
