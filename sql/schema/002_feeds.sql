@@ -1,7 +1,7 @@
 -- +goose Up
 CREATE TABLE
     IF NOT EXISTS feeds (
-        id UUID NOT NULL,
+        id UUID PRIMARY KEY,
         created_at TIMESTAMP,
         updated_at TIMESTAMP,
         name TEXT,

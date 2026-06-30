@@ -19,3 +19,8 @@ SELECT
 FROM feeds
 LEFT JOIN users
     ON feeds.user_id = users.id;
+
+-- name: GetFeedByUrl :one
+SELECT *
+FROM feeds
+WHERE url = ($1);

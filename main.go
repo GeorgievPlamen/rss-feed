@@ -43,6 +43,8 @@ func main() {
 	availableCommands.Register("agg", commands.HandlerAgg)
 	availableCommands.Register("addfeed", commands.HandlerAddFeed)
 	availableCommands.Register("feeds", commands.HandlerFeeds)
+	availableCommands.Register("follow", commands.HandlerFollow)
+	availableCommands.Register("following", commands.HandlerFollowing)
 
 	if len(os.Args) < 2 {
 		fmt.Printf("\n You need to provide atleast one argument.")

@@ -182,6 +182,24 @@ func HandlerAddFeed(s *State, cmd Command) error {
 		return err
 	}
 
+	_, err = s.Db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
+		ID: uuid.New(),
+		CreatedAt: sql.NullTime{
+			Time:  time.Now().UTC(),
+			Valid: true,
+		},
+		UpdatedAt: sql.NullTime{
+			Time:  time.Now().UTC(),
+			Valid: true,
+		},
+		UserID: curUser.ID,
+		FeedID: feed.ID,
+	})
+
+	if err != nil {
+		return err
+	}
+
 	fmt.Println(feed)
 	return nil
 }
@@ -194,6 +212,66 @@ func HandlerFeeds(s *State, cmd Command) error {
 
 	for _, v := range feeds {
 		fmt.Println(v.Name, v.Url, v.UserName)
+	}
+
+	return nil
+}
+
+func HandlerFollow(s *State, cmd Command) error {
+	if len(cmd.Args) < 1 {
+		return fmt.Errorf("Follow takes one arg - url")
+	}
+
+	curUser, err := s.Db.GetUser(context.Background(), s.Config.CurrentUserName)
+	if err != nil {
+		return err
+	}
+
+	feed, err := s.Db.GetFeedByUrl(context.Background(), sql.NullString{
+		String: cmd.Args[0],
+		Valid:  true,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	feedFollow, err := s.Db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
+		ID: uuid.New(),
+		CreatedAt: sql.NullTime{
+			Time:  time.Now().UTC(),
+			Valid: true,
+		},
+		UpdatedAt: sql.NullTime{
+			Time:  time.Now().UTC(),
+			Valid: true,
+		},
+		UserID: curUser.ID,
+		FeedID: feed.ID,
+	})
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(feedFollow.FeedName)
+	fmt.Println(feedFollow.UserName)
+
+	return nil
+}
+
+func HandlerFollowing(s *State, cmd Command) error {
+	curUser, err := s.Db.GetUser(context.Background(), s.Config.CurrentUserName)
+	if err != nil {
+		return err
+	}
+
+	curUserFeedFollows, err := s.Db.GetFeedFollowsByUserId(context.Background(), curUser.ID)
+	if err != nil {
+		return err
+	}
+
+	for _, v := range curUserFeedFollows {
+		fmt.Println(v.FeedName)
 	}
 
 	return nil
