@@ -250,7 +250,6 @@ func HandlerFollow(s *State, cmd Command, user database.User) error {
 }
 
 func HandlerFollowing(s *State, cmd Command, user database.User) error {
-
 	curUserFeedFollows, err := s.Db.GetFeedFollowsByUserId(context.Background(), user.ID)
 	if err != nil {
 		return err
@@ -258,6 +257,30 @@ func HandlerFollowing(s *State, cmd Command, user database.User) error {
 
 	for _, v := range curUserFeedFollows {
 		fmt.Println(v.FeedName)
+	}
+
+	return nil
+}
+
+func HandlerUnfollow(s *State, cmd Command, user database.User) error {
+	if len(cmd.Args) < 1 {
+		return fmt.Errorf("Unfollows takes in one argument - url")
+	}
+
+	feed, err := s.Db.GetFeedByUrl(context.Background(), sql.NullString{
+		String: cmd.Args[0],
+		Valid:  true,
+	})
+	if err != nil {
+		return err
+	}
+
+	err = s.Db.Unfollow(context.Background(), database.UnfollowParams{
+		UserID: user.ID,
+		FeedID: feed.ID,
+	})
+	if err != nil {
+		return err
 	}
 
 	return nil
