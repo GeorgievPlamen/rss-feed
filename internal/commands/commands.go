@@ -9,6 +9,7 @@ import (
 
 	"github.com/GeorgievPlamen/rss-feed/internal/config"
 	"github.com/GeorgievPlamen/rss-feed/internal/database"
+	"github.com/GeorgievPlamen/rss-feed/internal/rss"
 	"github.com/google/uuid"
 )
 
@@ -133,5 +134,15 @@ func HandlerUsers(s *State, cmd Command) error {
 		}
 	}
 
+	return nil
+}
+
+func HandlerAgg(s *State, cmd Command) error {
+	rss, err := rss.FetchFeed(context.Background(), "https://www.wagslane.dev/index.xml")
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(rss)
 	return nil
 }
