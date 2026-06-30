@@ -48,3 +48,92 @@ func (q *Queries) AddFeed(ctx context.Context, arg AddFeedParams) (Feed, error) 
 	)
 	return i, err
 }
+
+const getAllFeeds = `-- name: GetAllFeeds :many
+SELECT id, created_at, updated_at, name, url, user_id FROM feeds
+`
+
+func (q *Queries) GetAllFeeds(ctx context.Context) ([]Feed, error) {
+	rows, err := q.db.QueryContext(ctx, getAllFeeds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Feed
+	for rows.Next() {
+		var i Feed
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Name,
+			&i.Url,
+			&i.UserID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllFeedsWithUserName = `-- name: GetAllFeedsWithUserName :many
+SELECT
+    feeds.id,
+    feeds.created_at,
+    feeds.updated_at,
+    feeds.name,
+    feeds.url,
+    feeds.user_id,
+    users.name AS user_name
+FROM feeds
+LEFT JOIN users
+    ON feeds.user_id = users.id
+`
+
+type GetAllFeedsWithUserNameRow struct {
+	ID        uuid.UUID
+	CreatedAt sql.NullTime
+	UpdatedAt sql.NullTime
+	Name      sql.NullString
+	Url       sql.NullString
+	UserID    uuid.UUID
+	UserName  sql.NullString
+}
+
+func (q *Queries) GetAllFeedsWithUserName(ctx context.Context) ([]GetAllFeedsWithUserNameRow, error) {
+	rows, err := q.db.QueryContext(ctx, getAllFeedsWithUserName)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllFeedsWithUserNameRow
+	for rows.Next() {
+		var i GetAllFeedsWithUserNameRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Name,
+			&i.Url,
+			&i.UserID,
+			&i.UserName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

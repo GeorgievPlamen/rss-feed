@@ -185,3 +185,16 @@ func HandlerAddFeed(s *State, cmd Command) error {
 	fmt.Println(feed)
 	return nil
 }
+
+func HandlerFeeds(s *State, cmd Command) error {
+	feeds, err := s.Db.GetAllFeedsWithUserName(context.Background())
+	if err != nil {
+		return err
+	}
+
+	for _, v := range feeds {
+		fmt.Println(v.Name, v.Url, v.UserName)
+	}
+
+	return nil
+}
