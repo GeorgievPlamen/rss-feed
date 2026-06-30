@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/GeorgievPlamen/rss-feed/internal/config"
@@ -308,6 +309,32 @@ func HandlerUnfollow(s *State, cmd Command, user database.User) error {
 	return nil
 }
 
+func HandlerBrowse(s *State, cmd Command, user database.User) error {
+	userPosts, err := s.Db.GetPostsForUser(context.Background(), user.ID)
+	if err != nil {
+		return err
+	}
+
+	limit := 2
+	if len(cmd.Args[0]) > 0 {
+		arg, err := strconv.Atoi(cmd.Args[0])
+		if err != nil {
+			return err
+		}
+		limit = arg
+	}
+
+	if len(userPosts) > limit {
+		limit = len(userPosts)
+	}
+
+	for i := 0; i < limit; i++ {
+		fmt.Println(userPosts[i])
+	}
+
+	return nil
+}
+
 func ScrapeFeeds(s *State, ctx context.Context) error {
 	feedToFetch, err := s.Db.GetNextFeedToFetch(ctx)
 	if err != nil {
@@ -335,12 +362,42 @@ func ScrapeFeeds(s *State, ctx context.Context) error {
 	fmt.Println(feed.Channel.Link)
 
 	for _, v := range feed.Channel.Item {
-		fmt.Println("----------------")
-		fmt.Println(v.Title)
-		fmt.Println(v.PubDate)
-		fmt.Println(v.Description)
-		fmt.Println(v.Link)
-		fmt.Println("----------------")
+		publishedAt, err := time.Parse(time.RFC822, v.PubDate)
+		if err != nil {
+			return err
+		}
+
+		s.Db.CreatePost(ctx, database.CreatePostParams{
+			ID: uuid.New(),
+			CreatedAt: sql.NullTime{
+				Time:  time.Now().UTC(),
+				Valid: true,
+			},
+			UpdatedAt: sql.NullTime{
+				Time:  time.Now().UTC(),
+				Valid: true,
+			},
+			Title: sql.NullString{
+				String: v.Title,
+				Valid:  true,
+			},
+			Url: sql.NullString{
+				String: v.Link,
+				Valid:  true,
+			},
+			Description: sql.NullString{
+				String: v.Description,
+				Valid:  true,
+			},
+			FeedID: uuid.NullUUID{
+				UUID:  feedToFetch.ID,
+				Valid: true,
+			},
+			PublishedAt: sql.NullTime{
+				Time:  publishedAt,
+				Valid: true,
+			},
+		})
 	}
 
 	return nil

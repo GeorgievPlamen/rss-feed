@@ -46,6 +46,7 @@ func main() {
 	availableCommands.Register("follow", commands.MiddlewareLoggedIn(commands.HandlerFollow))
 	availableCommands.Register("following", commands.MiddlewareLoggedIn(commands.HandlerFollowing))
 	availableCommands.Register("unfollow", commands.MiddlewareLoggedIn(commands.HandlerUnfollow))
+	availableCommands.Register("browse", commands.MiddlewareLoggedIn(commands.HandlerBrowse))
 
 	if len(os.Args) < 2 {
 		fmt.Printf("\n You need to provide atleast one argument.")
